@@ -37,13 +37,13 @@ erDiagram
 
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|------|------|
-| id | number | ✓ | 一意のID（自動採番） |
+| id | bigint | ✓ | 一意のID（自動採番） |
 | title | string | ✓ | お問い合わせのタイトル |
-| body | string | ✓ | お問い合わせの本文 |
-| status | string | ✓ | ステータス（下記参照） |
-| priority | string | ✓ | 優先度（下記参照） |
-| createdAt | string | ✓ | 作成日時（ISO 8601） |
-| updatedAt | string | ✓ | 更新日時（ISO 8601） |
+| body | text | ✓ | お問い合わせの本文 |
+| status | string | ✓ | ステータス（下記参照）デフォルト: `open` |
+| priority | string | ✓ | 優先度（下記参照）デフォルト: `medium` |
+| created_at | datetime | ✓ | 作成日時 |
+| updated_at | datetime | ✓ | 更新日時 |
 
 **status の値**
 
@@ -67,11 +67,11 @@ erDiagram
 
 | フィールド | 型 | 必須 | 説明 |
 |-----------|-----|------|------|
-| id | number | ✓ | 一意のID（自動採番） |
-| ticketId | number | ✓ | 対象チケットのID（tickets.id への参照） |
-| body | string | ✓ | コメントの本文 |
+| id | bigint | ✓ | 一意のID（自動採番） |
+| ticket_id | bigint | ✓ | 対象チケットのID（tickets.id への外部キー） |
+| body | text | ✓ | コメントの本文 |
 | role | string | ✓ | 投稿者の役割（下記参照） |
-| createdAt | string | ✓ | 作成日時（ISO 8601） |
+| created_at | datetime | ✓ | 作成日時 |
 
 **role の値**
 
@@ -84,5 +84,5 @@ erDiagram
 
 ## 3. 備考
 
-- 初期実装は json-server を使用するため、フィールド名はキャメルケース（`ticketId`, `createdAt` など）で統一する
-- データベースへ移行する際はスネークケース（`ticket_id`, `created_at` など）に変換すること
+- フィールド名は Rails の規約に従いスネークケース（`ticket_id`, `created_at` など）で統一する
+- comments テーブルに `updated_at` カラムは存在しない（コメントは編集不可）
