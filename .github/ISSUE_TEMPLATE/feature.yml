@@ -1,0 +1,52 @@
+name: "機能追加"
+description: "新しい機能の追加リクエスト"
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        機能追加の Issue を作成します。
+        作業開始前にこの Issue を作成し、ブランチ名は `feature/#{issue番号}-{説明}` の形式で作成してください。
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "機能の概要"
+      description: "追加したい機能を簡潔に説明してください"
+      placeholder: "例: お問い合わせの検索フィルター機能を追加する"
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: "背景・目的"
+      description: "なぜこの機能が必要か説明してください"
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: "受け入れ条件"
+      description: "この機能が完成したとみなす条件を箇条書きで記述してください"
+      placeholder: |
+        - [ ] 条件1
+        - [ ] 条件2
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected_area
+    attributes:
+      label: "影響範囲"
+      multiple: true
+      options:
+        - Frontend (Next.js)
+        - Backend (Rails API)
+        - Database (MySQL)
+        - Docker / Infra
+        - Documentation
+    validations:
+      required: true
