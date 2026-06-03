@@ -13,8 +13,8 @@ export default function TicketListPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.tickets.list().then(setTickets).finally(() => setLoading(false));
-  }, []);
+    api.tickets.list({ includeDeleted: role === "agent" }).then(setTickets).finally(() => setLoading(false));
+  }, [role]);
 
   return (
     <div className="bg-white shadow-sm border border-slate-200 rounded-xl p-6">
@@ -35,7 +35,7 @@ export default function TicketListPage() {
       {loading ? (
         <p className="text-center text-slate-400 py-12">読み込み中...</p>
       ) : (
-        <TicketTable tickets={tickets} />
+        <TicketTable tickets={tickets} role={role} />
       )}
     </div>
   );

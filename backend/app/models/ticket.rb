@@ -10,4 +10,14 @@ class Ticket < ApplicationRecord
   validates :priority, inclusion: { in: PRIORITIES }
 
   default_scope { order(created_at: :desc) }
+
+  scope :active, -> { where(deleted_at: nil) }
+
+  def soft_delete!
+    update!(deleted_at: Time.current)
+  end
+
+  def deleted?
+    deleted_at.present?
+  end
 end
