@@ -101,13 +101,14 @@ Zendesk のようなお問い合わせ管理の仕組みを、シンプルな構
 | MySQL | 8.0.x | LTS。業界標準の安定版 |
 | Docker Compose | 2.x | 開発環境を統一管理 |
 
-### デプロイ先（予定）
+### デプロイ先
 
 | 項目 | 内容 |
 |------|------|
-| サーバー | Amazon EC2（フロントエンド・バックエンドを同一インスタンスに配置） |
-| データベース | Amazon RDS for MySQL |
-| コンテナ管理 | ECS 等は使用しない。EC2 上で Docker Compose を使用 |
+| サーバー | Amazon EC2 t3.small（フロントエンド・バックエンドを同一インスタンスに配置） |
+| データベース | Amazon RDS for MySQL 8.0（プライベートサブネット配置） |
+| プロセス管理 | ECS・Docker Compose は使用しない。Nginx + Puma + Next.js を EC2 上で直接実行 |
+| インフラ管理 | Terraform（`terraform/` ディレクトリ参照） |
 
 ---
 
