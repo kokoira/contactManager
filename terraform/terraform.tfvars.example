@@ -1,0 +1,17 @@
+# AWS リージョン（デフォルト: 東京）
+aws_region = "ap-northeast-1"
+
+# プロジェクト名（リソース名のプレフィックスになる）
+project_name = "contactmanager"
+
+# 自分の PC の IP アドレス（CIDR 形式）
+# 確認方法: curl -s https://checkip.amazonaws.com && echo "/32"
+my_ip = "YOUR_IP_ADDRESS/32"
+
+# RDS MySQL 管理者ユーザー名
+db_username = "admin"
+
+# RDS MySQL 管理者パスワード（8文字以上、英数字・記号）
+# ⚠️ このファイルをコピーして terraform.tfvars を作成すること
+# ⚠️ terraform.tfvars は .gitignore 済みのため、絶対にコミットしないこと
+db_password = "YOUR_SECURE_PASSWORD"
