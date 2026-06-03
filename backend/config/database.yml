@@ -15,3 +15,7 @@ development:
 test:
   <<: *default
   database: contact_manager_test
+
+production:
+  <<: *default
+  database: contact_manager_production
