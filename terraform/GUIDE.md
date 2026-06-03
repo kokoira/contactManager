@@ -245,8 +245,13 @@ EC2 は起動直後も SSH 接続できますが、Ruby 等のインストール
 # SSH でログイン
 ssh -i ~/.ssh/contactmanager-ec2 ec2-user@<ec2_public_ip>
 
-# インストールログを確認（最後に "user_data完了" が出たら OK）
+# インストールログを確認（最後の行に "Done installing documentation for bundler" が出たら完了）
 sudo tail -f /var/log/cloud-init-output.log
+
+# Ruby・Node.js が使えるか確認
+source ~/.bashrc
+ruby --version   # → ruby 3.3.7
+node --version   # → v20.x.x
 ```
 
 ### 2. スワップ領域の追加（推奨）
@@ -261,92 +266,53 @@ sudo swapon /swapfile
 echo '/swapfile swap swap defaults 0 0' | sudo tee -a /etc/fstab
 ```
 
-### 3. Rails 環境変数の設定
+### 3. 環境変数の設定
 
 `terraform output backend_env_hint` の出力を参考に環境変数を設定します。
 
 ```bash
-# /etc/environment に追記（システム全体に適用）
-sudo tee -a /etc/environment <<'EOF'
-DATABASE_HOST="<rds_endpoint>"
+# SECRET_KEY_BASE を生成
+source ~/.bashrc
+SECRET_KEY=$(ruby -rsecurerandom -e 'puts SecureRandom.hex(64)')
+
+# /etc/environment に書き込み
+sudo tee /etc/environment << EOF
+DATABASE_HOST="<terraform output rds_endpoint の値>"
 DATABASE_PORT="3306"
 DATABASE_USER="admin"
-DATABASE_PASSWORD="<db_password>"
+DATABASE_PASSWORD="<terraform.tfvars の db_password の値>"
 RAILS_ENV="production"
 PORT="3001"
-CORS_ALLOWED_ORIGIN="http://<ec2_public_ip>"
-RAILS_MASTER_KEY="<config/master.key の内容>"
+CORS_ALLOWED_ORIGIN="http://<terraform output ec2_public_ip の値>"
+SECRET_KEY_BASE="$SECRET_KEY"
 EOF
 
-# 環境変数を反映
-source /etc/environment
+# 環境変数を現在のセッションに反映
+set -a; source /etc/environment; set +a
 ```
 
-### 4. アプリケーションのデプロイ
+### 4. デプロイスクリプトを実行する
+
+リポジトリ内の `scripts/deploy.sh` が全手順を自動化しています。
 
 ```bash
-cd /var/www/contactmanager
+# デプロイスクリプトを取得して実行
+curl -fsSL https://raw.githubusercontent.com/kokoira/contactManager/main/scripts/deploy.sh | bash
+```
 
-# リポジトリをクローン
+または SSH 接続後に手動で実行：
+
+```bash
+# 初回: スクリプトを取得
+mkdir -p /var/www/contactmanager
+cd /var/www/contactmanager
 git clone https://github.com/kokoira/contactManager.git .
 
-# ─── バックエンド ─────────────────────────────────────
-cd backend
-bundle install --without development test
-bundle exec rails db:create db:migrate RAILS_ENV=production
-
-# Puma をバックグラウンドで起動
-bundle exec puma -C config/puma.rb -d
-
-# ─── フロントエンド ───────────────────────────────────
-cd ../frontend
-pnpm install
-pnpm build
-
-# Next.js をバックグラウンドで起動
-PORT=3000 pnpm start &
+# 実行
+bash scripts/deploy.sh
 ```
 
-### 5. Nginx の設定
-
-```bash
-sudo tee /etc/nginx/conf.d/contactmanager.conf <<'EOF'
-upstream rails_backend {
-    server 127.0.0.1:3001;
-}
-
-upstream nextjs_frontend {
-    server 127.0.0.1:3000;
-}
-
-server {
-    listen 80;
-    server_name _;
-
-    location /api/ {
-        proxy_pass         http://rails_backend;
-        proxy_set_header   Host $host;
-        proxy_set_header   X-Real-IP $remote_addr;
-        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
-    }
-
-    location / {
-        proxy_pass         http://nextjs_frontend;
-        proxy_set_header   Host $host;
-        proxy_set_header   X-Real-IP $remote_addr;
-        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_http_version 1.1;
-        proxy_set_header   Upgrade $http_upgrade;
-        proxy_set_header   Connection "upgrade";
-    }
-}
-EOF
-
-# デフォルト設定を無効化して新しい設定を反映
-sudo nginx -t && sudo systemctl reload nginx
-```
-
-### 6. 動作確認
+### 5. 動作確認
 
 ブラウザで `http://<ec2_public_ip>/` にアクセスして画面が表示されれば成功です。
 

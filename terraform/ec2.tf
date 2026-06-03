@@ -99,6 +99,52 @@ rbenv global 3.3.7
 rbenv rehash
 gem install bundler --no-document
 
+# rbenv を ec2-user でも使えるよう所有権を変更
+chown -R ec2-user:ec2-user /opt/rbenv
+
+# nginx.conf のデフォルト server ブロックを削除（conf.d/ との競合防止）
+cat > /etc/nginx/nginx.conf << 'NGINXEOF'
+user nginx;
+worker_processes auto;
+error_log /var/log/nginx/error.log notice;
+pid /run/nginx.pid;
+include /usr/share/nginx/modules/*.conf;
+events { worker_connections 1024; }
+http {
+    log_format main '$remote_addr - $remote_user [$time_local] "$request" $status $body_bytes_sent';
+    access_log /var/log/nginx/access.log main;
+    sendfile on; tcp_nopush on; keepalive_timeout 65;
+    types_hash_max_size 4096;
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+    include /etc/nginx/conf.d/*.conf;
+}
+NGINXEOF
+
+# アプリ用 Nginx 設定
+cat > /etc/nginx/conf.d/contactmanager.conf << 'NGINXAPP'
+upstream rails_backend   { server 127.0.0.1:3001; }
+upstream nextjs_frontend { server 127.0.0.1:3000; }
+server {
+    listen 80 default_server;
+    server_name _;
+    location /api/ {
+        proxy_pass       http://rails_backend;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+    location / {
+        proxy_pass         http://nextjs_frontend;
+        proxy_set_header   Host $host;
+        proxy_set_header   X-Real-IP $remote_addr;
+        proxy_http_version 1.1;
+        proxy_set_header   Upgrade $http_upgrade;
+        proxy_set_header   Connection "upgrade";
+    }
+}
+NGINXAPP
+
 # Nginx 起動
 systemctl enable nginx
 systemctl start nginx
