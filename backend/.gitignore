@@ -1,7 +1,0 @@
-/.bundle
-/log/*.log
-/tmp
-/storage
-/db/*.sqlite3
-*.swp
-.env
