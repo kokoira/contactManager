@@ -17,6 +17,7 @@
 | [機能要件](functional-requirements.md) | 各機能の詳細仕様 |
 | [画面設計](screen-design.md) | 画面遷移図・各画面のワイヤーフレーム |
 | [データベース設計](database-design.md) | ER図・テーブル定義 |
+| [インフラ構築ガイド](../terraform/GUIDE.md) | Terraform を使った EC2 + RDS へのデプロイ手順 |
 
 ---
 
