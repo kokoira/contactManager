@@ -15,15 +15,19 @@ export default function CommentSection({ ticketId, initialComments }: Props) {
   const [comments, setComments] = useState<Comment[]>(initialComments);
   const [body, setBody] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!body.trim()) return;
     setSubmitting(true);
+    setSubmitError(null);
     try {
       const comment = await api.comments.create(ticketId, { body: body.trim(), role });
       setComments((prev) => [...prev, comment]);
       setBody("");
+    } catch {
+      setSubmitError("送信に失敗しました。再度お試しください。");
     } finally {
       setSubmitting(false);
     }
@@ -64,6 +68,9 @@ export default function CommentSection({ ticketId, initialComments }: Props) {
         })}
       </div>
 
+      {submitError && (
+        <p className="text-xs text-red-600 mb-2">{submitError}</p>
+      )}
       <form onSubmit={handleSubmit} className="flex gap-2 items-end">
         <textarea
           value={body}

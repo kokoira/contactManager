@@ -32,12 +32,17 @@ export default function TicketDetailPage() {
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    api.tickets.get(Number(id)).then((t) => {
+    const numId = Number(id);
+    if (isNaN(numId)) {
+      router.replace("/");
+      return;
+    }
+    api.tickets.get(numId).then((t) => {
       setTicket(t);
       setDraftStatus(null);
       setDraftPriority(null);
     }).finally(() => setLoading(false));
-  }, [id]);
+  }, [id, router]);
 
   const isDirty =
     (draftStatus !== null && ticket !== null && draftStatus !== ticket.status) ||

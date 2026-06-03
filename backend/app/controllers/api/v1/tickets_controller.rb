@@ -2,7 +2,7 @@ module Api
   module V1
     class TicketsController < ApplicationController
       def index
-        tickets = params[:include_deleted] == 'true' ? Ticket.all : Ticket.active
+        tickets = params[:include_deleted] == 'true' ? Ticket.all.recent : Ticket.active.recent
         render json: tickets.as_json(include: { comments: { only: [:id, :body, :role, :created_at] } })
       end
 

@@ -9,7 +9,7 @@ class Ticket < ApplicationRecord
   validates :status, inclusion: { in: STATUSES }
   validates :priority, inclusion: { in: PRIORITIES }
 
-  default_scope { order(created_at: :desc) }
+  scope :recent, -> { order(created_at: :desc) }
 
   scope :active, -> { where(deleted_at: nil) }
 
