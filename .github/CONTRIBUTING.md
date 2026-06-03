@@ -77,6 +77,18 @@ gh pr create \
 
 ---
 
+## 初回セットアップ
+
+### pre-push フックのインストール
+
+クローン後、以下のコマンドを一度実行してください。main への直接 push を防ぐローカルフックが有効になります。
+
+```bash
+cp .github/hooks/pre-push .git/hooks/pre-push && chmod +x .git/hooks/pre-push
+```
+
+---
+
 ## ローカル開発環境
 
 ### 起動
