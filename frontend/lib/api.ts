@@ -23,10 +23,10 @@ export const api = {
         method: "POST",
         body: JSON.stringify({ ticket: data }),
       }),
-    updateStatus: (id: number, status: TicketStatus) =>
+    update: (id: number, data: { status?: TicketStatus; priority?: TicketPriority }) =>
       request<Ticket>(`/tickets/${id}`, {
         method: "PATCH",
-        body: JSON.stringify({ ticket: { status } }),
+        body: JSON.stringify({ ticket: data }),
       }),
   },
   comments: {

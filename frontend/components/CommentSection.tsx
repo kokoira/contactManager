@@ -31,43 +31,71 @@ export default function CommentSection({ ticketId, initialComments }: Props) {
 
   return (
     <div>
-      <hr className="border-gray-200 my-6" />
-      <div className="space-y-3 mb-6">
-        {comments.map((c) => (
-          <div key={c.id} className="border border-gray-200 rounded-lg p-4">
-            <div className="flex gap-2 items-center mb-2">
-              <span className="text-xs font-medium text-gray-600">
-                {c.role === "user" ? "ユーザー" : "担当者"}
-              </span>
-              <span className="text-xs text-gray-400">·</span>
-              <span className="text-xs text-gray-400">{formatDateTime(c.created_at)}</span>
-            </div>
-            <p className="text-sm text-gray-800 whitespace-pre-wrap">{c.body}</p>
-          </div>
-        ))}
+      <div className="space-y-4 mb-6 max-h-[480px] overflow-y-auto pr-1">
         {comments.length === 0 && (
-          <p className="text-sm text-gray-400">コメントはまだありません</p>
+          <p className="text-sm text-slate-400 text-center py-6">
+            まだメッセージがありません
+          </p>
         )}
+        {comments.map((c) => {
+          const isMine = c.role === role;
+          return (
+            <div
+              key={c.id}
+              className={`flex items-end gap-2 ${isMine ? "flex-row-reverse" : "flex-row"}`}
+            >
+              <Avatar role={c.role} />
+              <div className={`max-w-[72%] ${isMine ? "items-end" : "items-start"} flex flex-col gap-1`}>
+                <div
+                  className={`px-4 py-2.5 rounded-2xl text-sm whitespace-pre-wrap leading-relaxed ${
+                    isMine
+                      ? "bg-indigo-600 text-white rounded-br-sm"
+                      : "bg-slate-100 text-slate-800 rounded-bl-sm"
+                  }`}
+                >
+                  {c.body}
+                </div>
+                <span className="text-[11px] text-slate-400 px-1">
+                  {formatDateTime(c.created_at)}
+                </span>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-3">
+      <form onSubmit={handleSubmit} className="flex gap-2 items-end">
         <textarea
           value={body}
           onChange={(e) => setBody(e.target.value)}
-          placeholder="コメントを入力"
-          rows={3}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmit(e as unknown as React.FormEvent);
+          }}
+          placeholder="メッセージを入力"
+          rows={2}
+          className="flex-1 border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none"
         />
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            disabled={submitting || !body.trim()}
-            className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {submitting ? "投稿中..." : "投稿する"}
-          </button>
-        </div>
+        <button
+          type="submit"
+          disabled={submitting || !body.trim()}
+          className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed self-end h-[38px]"
+        >
+          {submitting ? "送信中..." : "送信"}
+        </button>
       </form>
+    </div>
+  );
+}
+
+function Avatar({ role }: { role: "user" | "agent" }) {
+  const isAgent = role === "agent";
+  return (
+    <div
+      className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
+        isAgent ? "bg-teal-100 text-teal-700" : "bg-indigo-100 text-indigo-700"
+      }`}
+    >
+      {isAgent ? "担" : "ユ"}
     </div>
   );
 }
@@ -75,7 +103,7 @@ export default function CommentSection({ ticketId, initialComments }: Props) {
 function formatDateTime(iso: string): string {
   const d = new Date(iso);
   return d.toLocaleString("ja-JP", {
-    year: "numeric",
+    timeZone: "Asia/Tokyo",
     month: "2-digit",
     day: "2-digit",
     hour: "2-digit",

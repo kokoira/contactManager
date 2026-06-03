@@ -7,16 +7,32 @@ export default function Header() {
   const isAgent = role === "agent";
 
   return (
-    <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-      <h1 className="text-xl font-semibold text-gray-800">お問い合わせ管理</h1>
+    <header
+      className={`px-6 py-4 flex items-center justify-between transition-colors duration-300 ${
+        isAgent ? "bg-teal-700" : "bg-indigo-600"
+      }`}
+    >
       <div className="flex items-center gap-3">
-        <span className={`text-sm ${!isAgent ? "font-bold text-gray-900" : "text-gray-400"}`}>
+        <h1 className="text-xl font-semibold text-white">お問い合わせ管理</h1>
+        <span
+          className={`text-xs font-medium px-2.5 py-1 rounded-full ${
+            isAgent
+              ? "bg-teal-500 text-teal-100"
+              : "bg-indigo-500 text-indigo-100"
+          }`}
+        >
+          {isAgent ? "担当者モード" : "ユーザーモード"}
+        </span>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <span className={`text-sm ${!isAgent ? "font-bold text-white" : "text-white/50"}`}>
           ユーザー
         </span>
         <button
           onClick={() => setRole(isAgent ? "user" : "agent")}
-          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-            isAgent ? "bg-blue-600" : "bg-gray-300"
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 ${
+            isAgent ? "bg-teal-500" : "bg-indigo-400"
           }`}
           aria-label="ロール切り替え"
         >
@@ -26,7 +42,7 @@ export default function Header() {
             }`}
           />
         </button>
-        <span className={`text-sm ${isAgent ? "font-bold text-gray-900" : "text-gray-400"}`}>
+        <span className={`text-sm ${isAgent ? "font-bold text-white" : "text-white/50"}`}>
           担当者
         </span>
       </div>

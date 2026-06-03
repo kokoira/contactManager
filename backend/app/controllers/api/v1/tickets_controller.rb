@@ -36,7 +36,7 @@ module Api
       end
 
       def ticket_update_params
-        params.require(:ticket).permit(:status)
+        params.require(:ticket).permit(:status, :priority)
       end
     end
   end
