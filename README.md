@@ -1,6 +1,11 @@
 # contactManager
 
-Zendesk ライクなお問い合わせ管理アプリの学習用実装です。
+チケットベースのお問い合わせ管理アプリの学習用実装です。  
+ユーザーと担当者の2つのロールを持ち、お問い合わせの作成・対応・管理をシンプルな UI で体験できます。
+
+## デモ
+
+https://github.com/user-attachments/assets/cb8ed9f4-4b0b-4a8f-a4c0-4114f2e22c0c
 
 ## 概要
 
