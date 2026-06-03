@@ -18,6 +18,7 @@ erDiagram
         varchar priority
         datetime created_at
         datetime updated_at
+        datetime deleted_at "nullable"
     }
     comments {
         int id PK
@@ -44,6 +45,7 @@ erDiagram
 | priority | string | ✓ | 優先度（下記参照）デフォルト: `medium` |
 | created_at | datetime | ✓ | 作成日時 |
 | updated_at | datetime | ✓ | 更新日時 |
+| deleted_at | datetime | - | ソフトデリートの日時。`NULL` = 有効なチケット（`deleted_at` にはインデックスあり） |
 
 **status の値**
 
@@ -86,3 +88,4 @@ erDiagram
 
 - フィールド名は Rails の規約に従いスネークケース（`ticket_id`, `created_at` など）で統一する
 - comments テーブルに `updated_at` カラムは存在しない（コメントは編集不可）
+- tickets の `deleted_at` が `NULL` でないレコードがソフトデリート済みチケット。物理削除は行わない
