@@ -29,6 +29,7 @@ export default function TicketDetailPage() {
   const [draftStatus, setDraftStatus] = useState<TicketStatus | null>(null);
   const [draftPriority, setDraftPriority] = useState<TicketPriority | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     api.tickets.get(Number(id)).then((t) => {
@@ -44,6 +45,8 @@ export default function TicketDetailPage() {
 
   const displayStatus: TicketStatus = draftStatus ?? ticket?.status ?? "open";
   const displayPriority: TicketPriority = draftPriority ?? ticket?.priority ?? "medium";
+
+  const isDeleted = ticket?.deleted_at !== null && ticket?.deleted_at !== undefined;
 
   useEffect(() => {
     if (!isDirty) return;
@@ -72,6 +75,21 @@ export default function TicketDetailPage() {
     }
   }
 
+  async function handleDelete() {
+    if (!ticket) return;
+    const ok = window.confirm(
+      `「${ticket.title}」を削除しますか？\nこの操作は取り消せません。`
+    );
+    if (!ok) return;
+    setDeleting(true);
+    try {
+      await api.tickets.destroy(ticket.id);
+      router.push("/");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   const handleBack = useCallback(() => {
     if (isDirty) {
       const ok = window.confirm(
@@ -87,12 +105,29 @@ export default function TicketDetailPage() {
 
   return (
     <div className="max-w-2xl">
-      <button
-        onClick={handleBack}
-        className="text-sm text-indigo-600 hover:underline mb-4 inline-block"
-      >
-        ← 一覧に戻る
-      </button>
+      <div className="flex items-center justify-between mb-4">
+        <button
+          onClick={handleBack}
+          className="text-sm text-indigo-600 hover:underline"
+        >
+          ← 一覧に戻る
+        </button>
+        {role === "user" && !isDeleted && (
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="px-3 py-1.5 text-sm text-red-600 border border-red-300 rounded-lg hover:bg-red-50 disabled:opacity-50 transition-colors"
+          >
+            {deleting ? "削除中..." : "削除する"}
+          </button>
+        )}
+      </div>
+
+      {isDeleted && (
+        <div className="mb-4 p-3 bg-slate-100 border border-slate-200 rounded-lg text-sm text-slate-500 font-medium">
+          このチケットは削除済みです
+        </div>
+      )}
 
       <div className="bg-white shadow-sm border border-slate-200 rounded-xl p-6 mb-4">
         <h2 className="text-xl font-semibold text-slate-900 mb-5">{ticket.title}</h2>
@@ -101,21 +136,25 @@ export default function TicketDetailPage() {
           <div>
             <dt className="text-slate-400 text-xs uppercase tracking-wide mb-1">緊急度</dt>
             <dd>
-              <select
-                value={displayPriority}
-                onChange={(e) => setDraftPriority(e.target.value as TicketPriority)}
-                className={`w-fit border rounded-lg px-2 py-1 text-sm font-medium focus:outline-none focus:ring-2 transition-colors ${PRIORITY_SELECT_STYLES[displayPriority]}`}
-              >
-                <option value="low">低</option>
-                <option value="medium">中</option>
-                <option value="high">高</option>
-              </select>
+              {isDeleted ? (
+                <PriorityBadge priority={ticket.priority} />
+              ) : (
+                <select
+                  value={displayPriority}
+                  onChange={(e) => setDraftPriority(e.target.value as TicketPriority)}
+                  className={`w-fit border rounded-lg px-2 py-1 text-sm font-medium focus:outline-none focus:ring-2 transition-colors ${PRIORITY_SELECT_STYLES[displayPriority]}`}
+                >
+                  <option value="low">低</option>
+                  <option value="medium">中</option>
+                  <option value="high">高</option>
+                </select>
+              )}
             </dd>
           </div>
           <div>
             <dt className="text-slate-400 text-xs uppercase tracking-wide mb-1">ステータス</dt>
             <dd>
-              {role === "agent" ? (
+              {role === "agent" && !isDeleted ? (
                 <select
                   value={displayStatus}
                   onChange={(e) => setDraftStatus(e.target.value as TicketStatus)}

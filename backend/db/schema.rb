@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_02_000002) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_03_000001) do
   create_table "comments", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.bigint "ticket_id", null: false
     t.text "body", null: false
@@ -26,6 +26,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_02_000002) do
     t.string "priority", default: "medium", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "deleted_at"
+    t.index ["deleted_at"], name: "index_tickets_on_deleted_at"
   end
 
   add_foreign_key "comments", "tickets"

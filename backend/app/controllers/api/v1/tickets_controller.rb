@@ -2,7 +2,7 @@ module Api
   module V1
     class TicketsController < ApplicationController
       def index
-        tickets = Ticket.all
+        tickets = params[:include_deleted] == 'true' ? Ticket.all : Ticket.active
         render json: tickets.as_json(include: { comments: { only: [:id, :body, :role, :created_at] } })
       end
 
@@ -27,6 +27,12 @@ module Api
         else
           render json: { errors: ticket.errors.full_messages }, status: :unprocessable_entity
         end
+      end
+
+      def destroy
+        ticket = Ticket.active.find(params[:id])
+        ticket.soft_delete!
+        head :no_content
       end
 
       private
