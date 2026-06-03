@@ -70,45 +70,42 @@ resource "aws_instance" "app" {
 
   # 起動時に Ruby・Node.js・Nginx 等をインストールする
   # 完了まで約 15 分かかる（/var/log/cloud-init-output.log で進捗確認）
+  # NOTE: <<-EOF はタブのみ除去するため、スクリプト本文はカラム0から記述する
   user_data = <<-EOF
-    #!/bin/bash
-    set -euo pipefail
+#!/bin/bash
+set -euo pipefail
 
-    # ─── システムパッケージ ───────────────────────────────────────
-    dnf update -y
-    dnf install -y git nginx mysql mysql-devel
-    dnf groupinstall -y "Development Tools"
-    dnf install -y openssl-devel readline-devel zlib-devel libyaml-devel
+# システムパッケージ
+dnf update -y
+dnf install -y git nginx mariadb1011 mariadb1011-devel
+dnf groupinstall -y "Development Tools"
+dnf install -y openssl-devel readline-devel zlib-devel libyaml-devel
 
-    # ─── Node.js 20 (NodeSource) ─────────────────────────────────
-    curl -fsSL https://rpm.nodesource.com/setup_20.x | bash -
-    dnf install -y nodejs
-    npm install -g pnpm
+# Node.js 20 (NodeSource)
+curl -fsSL https://rpm.nodesource.com/setup_20.x | bash -
+dnf install -y nodejs
+npm install -g pnpm
 
-    # ─── rbenv + ruby-build ──────────────────────────────────────
-    git clone https://github.com/rbenv/rbenv.git /opt/rbenv
-    git clone https://github.com/rbenv/ruby-build.git /opt/rbenv/plugins/ruby-build
+# rbenv + ruby-build
+git clone https://github.com/rbenv/rbenv.git /opt/rbenv
+git clone https://github.com/rbenv/ruby-build.git /opt/rbenv/plugins/ruby-build
 
-    cat >> /home/ec2-user/.bashrc <<'PROFILE'
+printf 'export RBENV_ROOT=/opt/rbenv\nexport PATH="$RBENV_ROOT/bin:$RBENV_ROOT/shims:$PATH"\neval "$(rbenv init -)"\n' >> /home/ec2-user/.bashrc
+
 export RBENV_ROOT=/opt/rbenv
 export PATH="$RBENV_ROOT/bin:$RBENV_ROOT/shims:$PATH"
-eval "$(rbenv init -)"
-PROFILE
+rbenv install 3.3.7
+rbenv global 3.3.7
+rbenv rehash
+gem install bundler --no-document
 
-    export RBENV_ROOT=/opt/rbenv
-    export PATH="$RBENV_ROOT/bin:$RBENV_ROOT/shims:$PATH"
-    rbenv install 3.3.7
-    rbenv global 3.3.7
-    rbenv rehash
-    gem install bundler --no-document
+# Nginx 起動
+systemctl enable nginx
+systemctl start nginx
 
-    # ─── Nginx 起動 ──────────────────────────────────────────────
-    systemctl enable nginx
-    systemctl start nginx
-
-    # ─── アプリ配置ディレクトリ ──────────────────────────────────
-    mkdir -p /var/www/contactmanager
-    chown ec2-user:ec2-user /var/www/contactmanager
+# アプリ配置ディレクトリ
+mkdir -p /var/www/contactmanager
+chown ec2-user:ec2-user /var/www/contactmanager
   EOF
 
   tags = {
