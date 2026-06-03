@@ -17,6 +17,9 @@ frontend/.env.*.local
 
 # Terraform
 terraform/terraform.tfvars
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+terraform/.terraform/
 
 # Backend (Rails)
 backend/.bundle/
